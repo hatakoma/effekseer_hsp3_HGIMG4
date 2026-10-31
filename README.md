@@ -1,5 +1,7 @@
 # Effekseer for HGIMG4
 
+本プロジェクトは、Effekseerの非公式HSP3連携ライブラリです。Effekseer Projectによる公式配布・公認を示すものではありません。
+
 Effekseer 1.80.7を、Windows版HGIMG4／HGIMG4DXの画面に直接描画する32bit DLLです。公式ランタイムを静的リンクし、HSPから呼べるC ABIを追加しています。HGIMG4本体の変更は不要です。OpenGL用とANGLE用の2つのDLLを同梱しています。
 
 ## 起動
