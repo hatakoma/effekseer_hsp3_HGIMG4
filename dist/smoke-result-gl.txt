@@ -1,0 +1,1 @@
+PASS: HGIMG4 (OpenGL) rendered 180 frames; load/play/update/draw/release/shutdown succeeded.

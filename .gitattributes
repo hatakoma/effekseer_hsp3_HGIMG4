@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.dll binary
+*.png binary
+*.efk binary
+*.efkefc binary
+# Preserve third-party files verbatim, including the original CP932 license.
+dist/licenses/* -text
+dist/res/shaders/* -text

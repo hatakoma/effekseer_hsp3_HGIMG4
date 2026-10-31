@@ -1,0 +1,2 @@
+OpenGL ES 2.0 (ANGLE 2.1.unknown hash)
+ANGLE (NVIDIA GeForce RTX 3060 Direct3D9Ex vs_3_0 ps_3_0)

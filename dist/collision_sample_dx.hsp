@@ -1,0 +1,2 @@
+#define EFK_ANGLE
+#include "collision_sample.hsp"

@@ -1,0 +1,175 @@
+#ifdef EFK_ANGLE
+#include "hgimg4dx.as"
+#include "effekseer_hgimg4dx.as"
+#uselib "effekseer_hgimg4.dll"
+#func wrong_init "efk_init" int
+#uselib "libGLESv2.dll"
+#func glGetVertexAttribiv "glGetVertexAttribiv" int,int,var
+#func glGetVertexAttribPointerv "glGetVertexAttribPointerv" int,int,var
+#else
+#include "hgimg4.as"
+#include "effekseer_hgimg4.as"
+#uselib "effekseer_hgimg4dx.dll"
+#func wrong_init "efk_init" int
+#uselib "opengl32.dll"
+#endif
+#func glGetIntegerv "glGetIntegerv" int,var
+#func glGetError "glGetError"
+#func glEnable "glEnable" int
+#func glDisable "glDisable" int
+#func glDepthMask "glDepthMask" int
+#func glPixelStorei "glPixelStorei" int,int
+#func glGetString "glGetString" int
+#uselib "kernel32.dll"
+#func copy_string "lstrcpynA" var,int,int
+
+onerror *runtime_error
+sdim message,1024
+checks=0
+screen 0,320,240
+gpreset
+sdim driver_version,512 : sdim driver_renderer,512
+glGetString $1f02 : driver_pointer=stat
+copy_string driver_version,driver_pointer,512
+glGetString $1f01 : driver_pointer=stat
+copy_string driver_renderer,driver_pointer,512
+driver_info=driver_version+"\n"+driver_renderer
+notesel driver_info : notesave "backend-info.txt"
+wrong_init 1024 : gosub *negative
+efk_update 1.0 : gosub *negative
+efk_init 0 : gosub *negative
+efk_init 1024 : gosub *positive
+efk_init 1024 : gosub *negative
+efk_load "missing-file.efkefc",1.0 : gosub *negative
+efk_load "assets/Laser01.efkefc",-1.0 : gosub *negative
+efk_last_error message,1024
+if strlen(message)=0 : goto *failed
+efk_load "assets/Laser01.efkefc",0.2
+effect=stat : gosub *positive
+efk_play -999,0.0,0.0,0.0 : gosub *negative
+efk_play effect,0.0,0.0,0.0
+playing=stat : gosub *positive
+efk_exists playing
+if stat!=1 : goto *failed
+efk_location playing,1.0,2.0,3.0 : gosub *positive
+efk_rotation playing,0.0,0.2,0.0 : gosub *positive
+efk_scale playing,0.5,0.5,0.5 : gosub *positive
+efk_speed playing,0.5 : gosub *positive
+efk_speed playing,-1.0 : gosub *negative
+efk_pause playing,1 : gosub *positive
+efk_update 2.0 : gosub *positive
+efk_exists playing
+if stat!=1 : goto *failed
+efk_pause playing,0 : gosub *positive
+efk_color playing,255,120,80,255 : gosub *positive
+efk_color playing,256,0,0,0 : gosub *negative
+efk_camera 0.0,0.0,20.0,0.0,0.0,0.0 : gosub *positive
+efk_camera 0.0,0.0,0.0,0.0,1.0,0.0 : gosub *negative
+efk_perspective 45.0,1.333333333,0.1,1000.0 : gosub *positive
+efk_perspective 180.0,1.0,1.0,10.0 : gosub *negative
+ddim view,16 : ddim projection,16
+view(0)=1.0 : view(5)=1.0 : view(10)=1.0 : view(15)=1.0 : view(14)=-20.0
+projection(0)=1.810660172 : projection(5)=2.414213562
+projection(10)=-1.00020002 : projection(11)=-1.0 : projection(14)=-0.200020002
+efk_matrices view,projection : gosub *positive
+efk_update -1.0 : gosub *negative
+efk_update 601.0 : gosub *negative
+efk_update 1.0 : gosub *positive
+
+; Ensure the DLL preserves host OpenGL bindings and render states.
+dim enums,15
+enums=$84e0,$8b8d,$0b45,$8894,$8895,$8069,$80c9,$80c8,$80cb,$80ca,$8009,$883d,$0b74,$0b72,$0cf5
+dim before,15 : dim after,15
+redraw 0
+color 20,80,130 : boxf 0,0,100,100
+glEnable $0be2
+glDepthMask 0
+glPixelStorei $0cf5,8
+repeat 15
+    glGetIntegerv enums(cnt),before(cnt)
+loop
+#ifdef EFK_ANGLE
+glGetIntegerv $8869,attrib_count
+dim attrib_enums,6
+attrib_enums=$8622,$8623,$8625,$886a,$8624,$889f
+dim attrib_before,7,attrib_count : dim attrib_after,7,attrib_count
+repeat attrib_count
+    index=cnt
+    repeat 6
+        glGetVertexAttribiv index,attrib_enums(cnt),attrib_before(cnt,index)
+    loop
+    glGetVertexAttribPointerv index,$8645,attrib_before(6,index)
+loop
+#endif
+glGetError
+if stat!=0 : goto *failed
+efk_draw : gosub *positive
+repeat 15
+    glGetIntegerv enums(cnt),after(cnt)
+    if before(cnt)!=after(cnt) : goto *failed
+loop
+#ifdef EFK_ANGLE
+repeat attrib_count
+    index=cnt
+    repeat 6
+        glGetVertexAttribiv index,attrib_enums(cnt),attrib_after(cnt,index)
+    loop
+    glGetVertexAttribPointerv index,$8645,attrib_after(6,index)
+    repeat 7
+        if attrib_before(cnt,index)!=attrib_after(cnt,index) : goto *failed
+    loop
+loop
+#endif
+glGetError
+if stat!=0 : goto *failed
+color 255,255,255 : pos 4,4 : mes "State restoration OK"
+redraw 1
+efk_release effect : gosub *positive
+efk_release effect : gosub *negative
+; Releasing a resource ID does not stop an already playing instance.
+efk_exists playing
+if stat!=1 : goto *failed
+efk_stop playing : gosub *positive
+efk_exists playing
+if stat!=0 : goto *failed
+efk_location playing,0.0,0.0,0.0 : gosub *negative
+efk_stop_all : gosub *positive
+efk_shutdown : gosub *positive
+efk_shutdown : gosub *positive
+efk_draw : gosub *negative
+efk_init 512 : gosub *positive
+efk_play effect,0.0,0.0,0.0 : gosub *negative
+efk_load "assets/Laser01.efkefc",0.2
+effect2=stat : gosub *positive
+if effect=effect2 : goto *failed
+efk_play effect2,0.0,0.0,0.0
+playing2=stat : gosub *positive
+repeat 600
+    efk_update 1.0 : gosub *positive
+loop
+efk_exists playing2
+if stat!=0 : goto *failed
+efk_release effect2 : gosub *positive
+efk_shutdown : gosub *positive
+message="PASS: "+checks+" API checks; GL state restoration; stale IDs; reinit; natural completion."
+notesel message : notesave "api-result.txt"
+end
+
+*positive
+if stat<0 : goto *failed
+checks++
+return
+*negative
+if stat!=-1 : goto *failed
+checks++
+return
+*failed
+efk_last_error message,1024
+message="FAIL after "+checks+" checks: "+message
+notesel message : notesave "api-result.txt"
+efk_shutdown
+end 1
+*runtime_error
+message="HSP error "+err+" after "+checks+" checks"
+notesel message : notesave "api-result.txt"
+end 1

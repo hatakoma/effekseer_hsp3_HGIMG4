@@ -1,0 +1,1 @@
+PASS: 2040 collision geometry and Effekseer bounce/friction checks

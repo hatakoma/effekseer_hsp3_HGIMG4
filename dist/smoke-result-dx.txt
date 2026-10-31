@@ -1,0 +1,1 @@
+PASS: HGIMG4DX (ANGLE ES2) rendered 180 frames; load/play/update/draw/release/shutdown succeeded.

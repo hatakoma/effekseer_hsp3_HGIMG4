@@ -1,0 +1,100 @@
+#ifdef EFK_ANGLE
+#include "hgimg4dx.as"
+#include "effekseer_hgimg4dx.as"
+#else
+#include "hgimg4.as"
+#include "effekseer_hgimg4.as"
+#endif
+onerror *runtime_error
+sdim message,1024
+checks=0
+screen 0,320,240 : gpreset
+efk_init 2000 : gosub *ok
+ddim hit,7
+efk_collider_floor 0,0.0 : floor_id=stat : gosub *ok
+efk_collision_cast 0.0,5.0,0.0,0.0,-5.0,0.0,hit
+if stat!=floor_id : goto *fail
+if absf(hit(1))>0.0001 : goto *fail
+if absf(hit(4)-1.0)>0.0001 : goto *fail
+efk_collider_sphere 0,0.0,3.0,0.0,1.0 : sphere_id=stat : gosub *ok
+efk_collision_cast 0.0,5.0,0.0,0.0,-5.0,0.0,hit
+if stat!=sphere_id : goto *fail
+if absf(hit(1)-4.0)>0.0001 : goto *fail
+efk_collider_box 0,0.0,7.0,0.0,2.0,2.0,2.0 : box_id=stat : gosub *ok
+efk_collision_cast 0.0,10000.0,0.0,0.0,-10000.0,0.0,hit
+if stat!=box_id : goto *fail
+if absf(hit(1)-8.0)>0.0001 : goto *fail
+efk_collider_enable box_id,0 : gosub *ok
+efk_collision_cast 0.0,10000.0,0.0,0.0,-10000.0,0.0,hit
+if stat!=sphere_id : goto *fail
+efk_collider_box box_id,20.0,7.0,0.0,2.0,2.0,2.0 : gosub *ok
+efk_collider_enable box_id,1 : gosub *ok
+efk_collision_cast 0.0,10.0,0.0,0.0,-10.0,0.0,hit
+if stat!=sphere_id : goto *fail
+efk_collider_floor sphere_id,0.0 : gosub *bad
+efk_collider_sphere 0,0.0,0.0,0.0,-1.0 : gosub *bad
+efk_collider_box 0,0.0,0.0,0.0,0.0,1.0,1.0 : gosub *bad
+efk_collider_remove box_id : gosub *ok
+efk_collider_enable box_id,1 : gosub *bad
+efk_collider_clear : gosub *ok
+efk_collider_hits floor_id : gosub *bad
+repeat 256
+    efk_collider_floor 0,-10.0 : gosub *ok
+loop
+efk_collider_floor 0,-10.0 : gosub *bad
+efk_collider_clear : gosub *ok
+
+; The same geometry callback is exercised by actual falling Effekseer particles.
+efk_load "assets/collision_rain.efk",1.0 : effect=stat : gosub *ok
+efk_collision_configure effect,1,0.7,0.2 : gosub *ok
+efk_collision_configure effect,1,-1.0,0.2 : gosub *bad
+efk_collision_configure effect,1,0.7,2.0 : gosub *bad
+efk_collider_floor 0,-2.0 : floor_id=stat : gosub *ok
+efk_collider_sphere 0,2.0,0.0,0.0,1.25 : sphere_id=stat : gosub *ok
+efk_collider_box 0,-2.0,0.0,0.0,2.0,2.0,2.0 : box_id=stat : gosub *ok
+efk_play effect,0.0,0.0,0.0 : playing=stat : gosub *ok
+efk_collision_configure effect,0,0.0,0.0 : gosub *bad
+floor_hits=0 : sphere_hits=0 : box_hits=0
+repeat 300
+    efk_update 1.0 : gosub *ok
+    efk_collider_hits floor_id : floor_hits+=stat
+    efk_collider_hits sphere_id : sphere_hits+=stat
+    efk_collider_hits box_id : box_hits+=stat
+loop
+if (floor_hits=0) | (sphere_hits=0) | (box_hits=0) : goto *fail
+efk_stop_all : gosub *ok
+efk_update 0.0 : gosub *ok
+efk_collision_configure effect,0,0.7,0.2 : gosub *ok
+efk_play effect,0.0,0.0,0.0 : gosub *ok
+repeat 150
+    efk_update 1.0 : gosub *ok
+    efk_collision_count
+    if stat!=0 : goto *fail
+loop
+efk_shutdown : gosub *ok
+efk_init 1000 : gosub *ok
+efk_collider_hits floor_id : gosub *bad
+efk_collision_cast 0.0,100.0,0.0,0.0,-100.0,0.0,hit
+if stat!=0 : goto *fail
+efk_shutdown : gosub *ok
+message="PASS: "+checks+" collision API checks; floor="+floor_hits+", sphere="+sphere_hits+", box="+box_hits
+notesel message : notesave "collision-result.txt"
+end
+*ok
+if stat<0 : goto *fail
+checks++
+return
+*bad
+if stat!=-1 : goto *fail
+checks++
+return
+*fail
+efk_last_error message,1024
+message="FAIL after "+checks+" checks: "+message+"; floor="+floor_hits+", sphere="+sphere_hits+", box="+box_hits
+notesel message : notesave "collision-result.txt"
+efk_shutdown
+end 1
+*runtime_error
+message="HSP error "+err+" after "+checks+" checks"
+notesel message : notesave "collision-result.txt"
+end 1

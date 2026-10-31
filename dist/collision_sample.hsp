@@ -1,0 +1,120 @@
+#ifdef EFK_ANGLE
+#include "hgimg4dx.as"
+#include "effekseer_hgimg4dx.as"
+#uselib "libGLESv2.dll"
+#else
+#include "hgimg4.as"
+#include "effekseer_hgimg4.as"
+#uselib "opengl32.dll"
+#endif
+#func glReadPixels "glReadPixels" int,int,int,int,int,int,var
+#func glFinish "glFinish"
+onerror *hsp_error
+screen 0,900,650 : gpreset
+title "Effekseer collisions / Space: restart / C: collisions ON-OFF / Esc: exit"
+setcls CLSMODE_SOLID,$101824
+gpnull camera_id
+gpcamera camera_id,45.0,900.0/650.0,0.1,1000.0
+setpos camera_id,0,7,18
+gplookat camera_id,0,1,0
+gpusecamera camera_id
+gpfloor floor_model,14.0,8.0,$304757
+setpos floor_model,0,-2,0
+gpbox box_model,2.0,$4488cc
+setpos box_model,-2,0,0
+; Original UV-sphere mesh: radius 1.25, matches the analytic collider.
+dim vertices,25,13
+gpmeshclear
+repeat 13
+    lat=cnt : theta=3.14159265358979*lat/12.0
+    repeat 25
+        lon=cnt : phi=6.28318530717959*lon/24.0
+        nx=sin(theta)*cos(phi) : ny=cos(theta) : nz=sin(theta)*sin(phi)
+        gpmeshadd vertex,nx*1.25,ny*1.25,nz*1.25,nx,ny,nz,lon/24.0,lat/12.0
+        vertices(lon,lat)=vertex
+    loop
+loop
+repeat 12
+    lat=cnt
+    repeat 24
+        lon=cnt
+        gpmeshpolygon vertices(lon,lat),vertices(lon+1,lat),vertices(lon,lat+1),vertices(lon+1,lat+1)
+    loop
+loop
+gpmesh sphere_model,$e6aa50
+setpos sphere_model,2,0,0
+if (floor_model<0)|(box_model<0)|(sphere_model<0) : goto *hsp_error
+sdim error_message,1024
+command_line=dir_cmdline
+smoke=instr(command_line,0,"--smoke")>=0
+efk_init 4000 : gosub *check
+efk_camera 0.0,7.0,18.0,0.0,1.0,0.0 : gosub *check
+efk_perspective 45.0,900.0/650.0,0.1,1000.0 : gosub *check
+efk_collider_floor 0,-2.0 : floor_id=stat : gosub *check
+efk_collider_sphere 0,2.0,0.0,0.0,1.25 : sphere_id=stat : gosub *check
+efk_collider_box 0,-2.0,0.0,0.0,2.0,2.0,2.0 : box_id=stat : gosub *check
+efk_load "assets/collision_rain.efk",1.0 : rain=stat : gosub *check
+efk_collision_configure rain,1,0.7,0.2 : gosub *check
+efk_play rain,0.0,0.0,0.0 : gosub *check
+enabled=1 : frame=0 : floor_hits=0 : sphere_hits=0 : box_hits=0
+onexit *cleanup
+repeat
+    stick keys,0
+    if keys&128 : goto *cleanup
+    if (keys&16)|((frame>0)&((frame\400)=0)) {
+        efk_stop_all : gosub *check
+        efk_play rain,0.0,0.0,0.0 : gosub *check
+        floor_hits=0 : sphere_hits=0 : box_hits=0
+    }
+    getkey c,67
+    if c & (previous_c=0) {
+        enabled=1-enabled
+        efk_collider_enable floor_id,enabled : gosub *check
+        efk_collider_enable sphere_id,enabled : gosub *check
+        efk_collider_enable box_id,enabled : gosub *check
+    }
+    previous_c=c
+    efk_update 1.0 : gosub *check
+    efk_collider_hits floor_id : floor_hits+=stat
+    efk_collider_hits sphere_id : sphere_hits+=stat
+    efk_collider_hits box_id : box_hits+=stat
+    redraw 0
+    gpdraw
+    efk_draw : gosub *check
+    color 230,240,255
+    pos 18,16 : mes "Effekseer: particle collision / floor + sphere + box"
+    pos 18,42 : mes "Space: restart   C: toggle collision   Esc: exit"
+    pos 18,68 : mes "Collisions="+enabled+"    bounce=0.7    friction=0.2"
+    pos 18,602 : mes "Hits  floor="+floor_hits+"  sphere="+sphere_hits+"  box="+box_hits
+    if smoke & (frame=120) {
+        sdim pixels,900*650*4
+        glFinish
+        glReadPixels 0,0,900,650,$1908,$1401,pixels
+        bsave "collision.rgba",pixels,900*650*4
+    }
+    redraw 1
+    frame++
+    if smoke & (frame>=300) : goto *cleanup
+    await 16
+loop
+*check
+if stat<0 {
+    efk_last_error error_message,1024
+    notesel error_message : notesave "error.txt"
+    if smoke=0 : dialog error_message,1,"Effekseer collision error"
+    efk_shutdown
+    end 1
+}
+return
+*cleanup
+efk_shutdown : gosub *check
+if smoke {
+    if (floor_hits=0)|(sphere_hits=0)|(box_hits=0) : goto *hsp_error
+    message="PASS: 300 collision frames; floor="+floor_hits+", sphere="+sphere_hits+", box="+box_hits
+    notesel message : notesave "collision-smoke-result.txt"
+}
+end
+*hsp_error
+error_message="Collision sample HSP/runtime error: "+err
+notesel error_message : notesave "error.txt"
+end 1

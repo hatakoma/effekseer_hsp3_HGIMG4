@@ -1,0 +1,13 @@
+/build/
+/vendor/
+*.log
+/dist/*.ax
+/dist/smoke*
+!/dist/smoke-result-gl.txt
+!/dist/smoke-result-dx.txt
+/dist/error.txt
+/dist/*.rgba
+/tools/CollisionFixture/bin/
+/tools/CollisionFixture/obj/
+**/__pycache__/
+/*.zip

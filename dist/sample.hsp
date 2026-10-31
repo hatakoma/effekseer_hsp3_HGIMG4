@@ -1,0 +1,100 @@
+#ifdef EFK_ANGLE
+#include "hgimg4dx.as"
+#include "effekseer_hgimg4dx.as"
+#uselib "libGLESv2.dll"
+#else
+#include "hgimg4.as"
+#include "effekseer_hgimg4.as"
+#uselib "opengl32.dll"
+#endif
+#func glReadPixels "glReadPixels" int,int,int,int,int,int,var
+#func glFinish "glFinish"
+
+onerror *hsp_error
+screen 0,800,600
+#ifdef EFK_ANGLE
+backend="HGIMG4DX (ANGLE ES2)"
+#else
+backend="HGIMG4 (OpenGL)"
+#endif
+title "Effekseer 1.80.7 + "+backend+" / Space: replay / Esc: exit"
+gpreset
+setcls CLSMODE_SOLID, $101824
+gpnull camera_id
+gpcamera camera_id,45.0,1.333333333,0.1,1000.0
+gpusecamera camera_id
+setpos camera_id,0,0,20
+gplookat camera_id,0,0,0
+gpbox box,2.0,$4080d0
+setpos box,-4,0,0
+gpbox box2,2.0,$d08040
+setpos box2,4,0,0
+if (box<0) | (box2<0) {
+    error_message="HGIMG4 model creation failed. Check res/shaders files."
+    notesel error_message : notesave "error.txt"
+    end 1
+}
+onexit *cleanup
+command_line=dir_cmdline
+smoke = instr(command_line,0,"--smoke") >= 0
+sdim error_message,1024
+efk_init 8000 : gosub *check
+efk_camera 0.0,0.0,20.0,0.0,0.0,0.0 : gosub *check
+efk_perspective 45.0,800.0/600.0,0.1,1000.0 : gosub *check
+efk_load "assets/Laser01.efkefc",0.5
+effect=stat : gosub *check
+efk_play effect,0.0,0.0,0.0
+playing=stat : gosub *check
+frame=0
+repeat
+    stick keys,0
+    if keys&128 : goto *cleanup
+    if (keys&16) | ((frame>0) & ((frame\120)=0)) {
+        efk_play effect,0.0,0.0,0.0 : gosub *check
+    }
+    efk_update 1.0 : gosub *check
+    redraw 0
+    addang box,0.01,0.02,0.0
+    addang box2,0.02,0.01,0.0
+    gpdraw
+    efk_draw : gosub *check
+    color 230,240,255
+    pos 16,16 : mes "Effekseer 1.80.7 + "+backend
+    pos 16,42 : mes "Space: replay   Esc: exit   Frame: "+frame
+    color 70,210,160 : boxf 16,570,180,580
+    if smoke & (frame=35) {
+        sdim pixels,800*600*4
+        glFinish
+        glReadPixels 0,0,800,600,$1908,$1401,pixels
+        bsave "smoke.rgba",pixels,800*600*4
+    }
+    redraw 1
+    frame++
+    if smoke & (frame>=180) : goto *cleanup
+    await 16
+loop
+
+*check
+if stat < 0 {
+    efk_last_error error_message,1024
+    notesel error_message : notesave "error.txt"
+    if smoke=0 : dialog error_message,1,"Effekseer error"
+    efk_shutdown
+    end 1
+}
+return
+
+*cleanup
+efk_stop_all : gosub *check
+efk_release effect : gosub *check
+efk_shutdown : gosub *check
+if smoke {
+    result="PASS: "+backend+" rendered 180 frames; load/play/update/draw/release/shutdown succeeded."
+    notesel result : notesave "smoke-result.txt"
+}
+end
+
+*hsp_error
+error_message="HSP runtime error "+err
+notesel error_message : notesave "error.txt"
+end 1
