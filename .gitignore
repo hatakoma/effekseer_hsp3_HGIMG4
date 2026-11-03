@@ -11,3 +11,9 @@
 /tools/CollisionFixture/obj/
 **/__pycache__/
 /*.zip
+
+# Temporary test outputs; backend-specific reports remain tracked.
+/dist/api-result.txt
+/dist/backend-info.txt
+/dist/collision-result.txt
+/dist/collision-smoke-result.txt

@@ -1,6 +1,5 @@
 #include "angle_gl.h"
 #include <cstring>
-#include <stdexcept>
 
 void* efk_angle_context() {
     auto module = GetModuleHandleW(L"libEGL.dll");

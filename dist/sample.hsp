@@ -44,7 +44,7 @@ efk_perspective 45.0,800.0/600.0,0.1,1000.0 : gosub *check
 efk_load "assets/Laser01.efkefc",0.5
 effect=stat : gosub *check
 efk_play effect,0.0,0.0,0.0
-playing=stat : gosub *check
+gosub *check
 frame=0
 repeat
     stick keys,0

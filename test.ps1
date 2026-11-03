@@ -11,10 +11,9 @@ Write-Output $nativeResult
 foreach ($mode in @('gl','dx')) {
     $suffix = if ($mode -eq 'dx') { '_dx' } else { '' }
     $runtime = if ($mode -eq 'dx') { 'hsp3gpdx.exe' } else { 'hsp3gp.exe' }
-    foreach ($file in @('api-result.txt','smoke-result.txt','error.txt','smoke.rgba','backend-info.txt',"api-result-$mode.txt","smoke-result-$mode.txt","backend-info-$mode.txt","smoke-$mode.rgba")) {
-        if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file }
-    }
-    foreach ($file in @('collision-result.txt','collision-smoke-result.txt','collision.rgba',"collision-result-$mode.txt","collision-smoke-result-$mode.txt","collision-$mode.rgba")) {
+    $results = @('api-result','smoke-result','collision-result','collision-smoke-result')
+    $outputs = @($results | ForEach-Object { "$_.txt" }) + @('backend-info.txt','smoke.rgba','collision.rgba')
+    foreach ($file in ($outputs + @('error.txt'))) {
         if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file }
     }
     foreach ($name in @("api_test$suffix","sample$suffix","collision_test$suffix","collision_sample$suffix")) {
@@ -29,7 +28,7 @@ foreach ($mode in @('gl','dx')) {
         $process.Refresh()
         if ($process.ExitCode -ne 0) { throw "$name failed: exit $($process.ExitCode). See *-result.txt / error.txt" }
     }
-    foreach ($name in @('api-result','smoke-result','collision-result','collision-smoke-result')) {
+    foreach ($name in $results) {
         $result = Get-Content -LiteralPath "$name.txt" -Raw
         if (!$result.StartsWith('PASS:')) { throw $result }
         Copy-Item -LiteralPath "$name.txt" -Destination "$name-$mode.txt"
@@ -41,5 +40,6 @@ foreach ($mode in @('gl','dx')) {
     Copy-Item -LiteralPath collision.rgba -Destination "collision-$mode.rgba"
     Copy-Item -LiteralPath backend-info.txt -Destination "backend-info-$mode.txt"
     Get-Content -LiteralPath "backend-info-$mode.txt"
+    Remove-Item -LiteralPath $outputs
 }
 } finally { Pop-Location }

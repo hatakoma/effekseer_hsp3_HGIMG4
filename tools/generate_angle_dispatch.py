@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 root = Path(__file__).resolve().parents[1]
 header = Path(r'C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\gl\GL.h').read_text()
-sources = list((root/'vendor/Effekseer/Dev/Cpp/EffekseerRendererGL').rglob('*.cpp')) + [root/'src/bridge.cpp']
+sources = list((root/'vendor/Effekseer/Dev/Cpp/EffekseerRendererGL').rglob('*.cpp')) + [root/'src/bridge.cpp', root/'src/gl_state.h']
 used = set()
 for source in sources:
     used.update(re.findall(r'(?<![\w:])(gl[A-Z]\w+)\s*\(', source.read_text(encoding='utf-8-sig')))

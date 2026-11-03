@@ -112,6 +112,15 @@ efk_last_error message,1024
 - HGIMG4のOpenGL 3.1ではEffekseerのGLSL 1.20描画経路、3.3以上ではGLSL 3.30描画経路を選択します。ANGLE版はEffekseerのOpenGLES2／GLSL ES 1.00描画経路です。実機確認済みなのはOpenGL 3.1とHSP 3.7付属ANGLEのDirect3D9Ex経路です。OpenGL ES 3専用機能への対応ではありません。
 - 画面コンテキストの交換・デバイスロスト復旧は未検証。`screen`や`gpreset`で描画環境を作り直す場合は先に終了処理してください。
 
+## 内部構成
+
+- `src/bridge.cpp`: 公開C ABI、共通の初期化・ID検証、Effekseerのライフサイクル管理。
+- `src/gl_state.h`: HGIMG4／ANGLEの描画状態を保存・復元するRAIIガード。
+- `src/collision_world.h`: 床・球・箱の衝突判定。
+- `src/angle_loader.cpp`と`src/angle_dispatch.cpp`: HGIMG4DXがロードしたANGLEへの関数転送。
+
+同梱テクスチャはLaser01が参照する3点のみです。公開APIと上流の描画機能は維持しています。
+
 ## ビルドと検証
 
 Visual Studio 2022のC++ x86ツールとWindows SDK、CMake 3.20以上、Gitを使用します。
