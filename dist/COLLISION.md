@@ -85,7 +85,7 @@ hits_this_frame=stat
 
 `build.ps1` → `test.ps1`で既存機能の回帰テスト、衝突形状の数学テスト、実粒子による接触・無効化テストを実行します。結果は`collision-math-result.txt`、`collision-result-gl.txt`、`collision-result-dx.txt`、`collision-smoke-result-*.txt`に出力します。
 
-2026-10-31、HSP 3.7 / RTX 3060のOpenGL 3.1とANGLE Direct3D9Exで、各739回の衝突APIチェック、各300フレームの混在描画、床552回・球63回・箱181回の接触を確認しました。反発・摩擦の数値テストにはEffekseer本体の衝突処理を使っています。
+2026-11-03、Effekseer 1.80.8 / HSP 3.7 / RTX 3060のOpenGL 3.1とANGLE Direct3D9Exで、各739回の衝突APIチェック、各300フレームの混在描画、床552回・球63回・箱181回の接触を確認しました。反発・摩擦の数値テストにはEffekseer本体の衝突処理を使っています。
 
 雨粒はこのプロジェクト用の自作素材です。生成コードは`tools/CollisionFixture/Program.cs`。再生成する場合のみ.NET 9 SDKと公式エクスポーターの依存パッケージが必要です。
 

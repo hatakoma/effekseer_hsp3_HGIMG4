@@ -8,12 +8,12 @@ if (!(Get-Command $CMake -ErrorAction SilentlyContinue)) {
     else { throw 'CMake is required. Pass -CMake with its absolute path.' }
 }
 if (!(Test-Path vendor/Effekseer/CMakeLists.txt)) {
-    git clone --depth 1 --branch 1807 https://github.com/effekseer/Effekseer.git vendor/Effekseer
+    git clone --depth 1 --branch 1808 https://github.com/effekseer/Effekseer.git vendor/Effekseer
     if ($LASTEXITCODE) { throw 'Effekseer download failed' }
 }
-$expected = 'b87d1a2e3ff3731ba25cad34f8d8abeae382b21f'
+$expected = 'b5700082b49bc5f919610880dafddc90211a9a4e'
 $actual = git -C vendor/Effekseer rev-parse HEAD
-if ($LASTEXITCODE -or $actual -ne $expected) { throw "Expected Effekseer 1807 commit $expected" }
+if ($LASTEXITCODE -or $actual -ne $expected) { throw "Expected Effekseer 1808 commit $expected" }
 & $CMake -S . -B build -G 'Visual Studio 17 2022' -A Win32
 if ($LASTEXITCODE) { throw 'CMake configure failed' }
 & $CMake --build build --config Release --target effekseer_hgimg4 effekseer_hgimg4dx collision_math_test --parallel -- /nr:false

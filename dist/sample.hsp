@@ -17,7 +17,7 @@ backend="HGIMG4DX (ANGLE ES2)"
 #else
 backend="HGIMG4 (OpenGL)"
 #endif
-title "Effekseer 1.80.7 + "+backend+" / Space: replay / Esc: exit"
+title "Effekseer 1.80.8 + "+backend+" / Space: replay / Esc: exit"
 gpreset
 setcls CLSMODE_SOLID, $101824
 gpnull camera_id
@@ -59,7 +59,7 @@ repeat
     gpdraw
     efk_draw : gosub *check
     color 230,240,255
-    pos 16,16 : mes "Effekseer 1.80.7 + "+backend
+    pos 16,16 : mes "Effekseer 1.80.8 + "+backend
     pos 16,42 : mes "Space: replay   Esc: exit   Frame: "+frame
     color 70,210,160 : boxf 16,570,180,580
     if smoke & (frame=35) {

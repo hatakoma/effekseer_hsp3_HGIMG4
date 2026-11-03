@@ -293,7 +293,7 @@ API efk_last_error(char* buffer, int bytes) {
     if (!buffer || bytes < 1) return -1;
     strncpy_s(buffer, static_cast<size_t>(bytes), errorText, _TRUNCATE); return 0;
 }
-API efk_version() { return 1807; }
+API efk_version() { return 1808; }
 
 namespace {
 double coordinate(double x) {

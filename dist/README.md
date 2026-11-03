@@ -2,7 +2,7 @@
 
 本プロジェクトは、Effekseerの非公式HSP3連携ライブラリです。Effekseer Projectによる公式配布・公認を示すものではありません。
 
-Effekseer 1.80.7を、Windows版HGIMG4／HGIMG4DXの画面に直接描画する32bit DLLです。公式ランタイムを静的リンクし、HSPから呼べるC ABIを追加しています。HGIMG4本体の変更は不要です。OpenGL用とANGLE用の2つのDLLを同梱しています。
+Effekseer 1.80.8を、Windows版HGIMG4／HGIMG4DXの画面に直接描画する32bit DLLです。公式ランタイムを静的リンクし、HSPから呼べるC ABIを追加しています。HGIMG4本体の変更は不要です。OpenGL用とANGLE用の2つのDLLを同梱しています。
 
 ## 起動
 
@@ -96,7 +96,7 @@ efk_last_error message,1024
 | `efk_matrices view,projection` | 各`ddim ...,16`の行列。Effekseerの行ベクトル／行優先形式。OpenGLのZ範囲-1～1。LOD用の視点は先に`efk_camera`で設定 |
 | `efk_draw` | 現在の描画先に描く。`redraw 0`～`redraw 1`内、通常`gpdraw`の後 |
 | `efk_shutdown` | 全リソース解放。重複呼び出し可 |
-| `efk_version` | 1807を返す |
+| `efk_version` | 1808を返す |
 | `efk_last_error buffer,bytes` | 直近エラーをコピー。bytesは実際のバッファ長以下にする |
 
 小数引数は`double`で渡してください。行列ポインターや文字列バッファは、宣言されたサイズ以上を確保する必要があります。IDは再初期化後も使い回さず、古いIDから別のエフェクトを誤操作しない構造です。
@@ -116,16 +116,23 @@ efk_last_error message,1024
 
 Visual Studio 2022のC++ x86ツールとWindows SDK、CMake 3.20以上、Gitを使用します。
 
+以前の版をビルド済みの場合は、`vendor/Effekseer`に独自変更がないことを確認してから、以下で依存ソースを更新してください。`build.ps1`は異なるコミットを検出すると停止し、既存ソースを自動で上書きしません。
+
+```powershell
+git -C vendor/Effekseer fetch origin tag 1808 --depth 1
+git -C vendor/Effekseer checkout --detach 1808
+```
+
 ```powershell
 .\build.ps1
 .\test.ps1 -HspDir C:\hsp37
 ```
 
-`build.ps1`は不足時に公式ソースを取得し、タグ1807のコミット`b87d1a2e3ff3731ba25cad34f8d8abeae382b21f`を確認し、2つのDLLを生成します。CMakeがPATHにない場合は`-CMake "C:\...\cmake.exe"`を指定できます。DLLにEffekseerとC++ランタイムを静的リンクし、追加のVCランタイムDLLは不要です。ANGLE SDK／インポートライブラリのインストールも不要です。
+`build.ps1`は不足時に公式ソースを取得し、タグ1808のコミット`b5700082b49bc5f919610880dafddc90211a9a4e`を確認し、2つのDLLを生成します。CMakeがPATHにない場合は`-CMake "C:\...\cmake.exe"`を指定できます。DLLにEffekseerとC++ランタイムを静的リンクし、追加のVCランタイムDLLは不要です。ANGLE SDK／インポートライブラリのインストールも不要です。
 
 ANGLE対応では、上流のWindows向けWGL関数ローダーを、ビルドフォルダー内の生成コピーでEGL/ANGLE向けに切り替えます。上流チェックアウトは編集しません。ES2で使えないVAO・バッファマップ等の機能を無効にし、ホストの頂点属性を保存・復元します。基本GL呼び出しの転送コードは`src/angle_dispatch.cpp`として同梱しているので、通常ビルドにPythonは不要です。C++向けには`src/effekseer_hgimg4.h`と、各DLLに対応する`build/Release/*.lib`を利用できます。
 
-2026-10-31にWindows/HSP 3.7で両方のRelease DLLをビルドし、各643回のAPIチェック、描画状態復元15項目、無効ID・再初期化・自然終了・異なるバックエンドの誤使用拒否、各180フレームの混在描画を確認しました。ANGLEでは全頂点属性の有効状態・型・サイズ・正規化・ストライド・バッファ・ポインターの復元も比較しています。
+2026-11-03にEffekseer 1.80.8 / Windows / HSP 3.7で両方のRelease DLLをビルドし、各644回のAPIチェック、描画状態復元15項目、無効ID・再初期化・自然終了・異なるバックエンドの誤使用拒否、各180フレームの混在描画を確認しました。ANGLEでは全頂点属性の有効状態・型・サイズ・正規化・ストライド・バッファ・ポインターの復元も比較しています。
 
 確認環境はNVIDIA GeForce RTX 3060。OpenGL側は`3.1.0 NVIDIA 617.42`、ANGLE側は`OpenGL ES 2.0 (ANGLE 2.1.unknown hash)` / `Direct3D9Ex vs_3_0 ps_3_0`です。`dist/backend-info-gl.txt`と`dist/backend-info-dx.txt`に実行時の値を保存しています。
 
@@ -139,7 +146,7 @@ ANGLE対応では、上流のWindows向けWGL関数ローダーを、ビルド�
 
 Effekseer、公式サンプル素材、HGIMG4標準シェーダー等の第三者部分には、各権利者のライセンスと著作権表記が適用されます。再配布時には`LICENSE`および`dist/licenses/`と`dist/THIRD_PARTY_NOTICES.md`を保持してください。
 
-- [Effekseer公式](https://github.com/effekseer/Effekseer/tree/1807)
+- [Effekseer公式](https://github.com/effekseer/Effekseer/tree/1808)
 - [HGIMG4公式ガイド](https://www.onionsoft.net/hsp/v37/doclib/hgimg4.html)
 - [ANGLE公式開発ガイド](https://github.com/google/angle/blob/main/doc/DevSetup.md)
 - `dist/licenses/`と`dist/THIRD_PARTY_NOTICES.md`に同梱物のライセンスを収録しています。

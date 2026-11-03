@@ -2,7 +2,7 @@
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 root=Path(__file__).resolve().parents[1]
-output=root/'effekseer_hgimg4-1.80.7-win32-collision.zip'
+output=root/'effekseer_hgimg4-1.80.8-win32-collision.zip'
 files=[root/name for name in ('LICENSE','README.md','CMakeLists.txt','build.ps1','test.ps1')]
 for folder in ('dist','src','tests','tools'):
     for file in (root/folder).rglob('*'):

@@ -26,6 +26,9 @@
 onerror *runtime_error
 sdim message,1024
 checks=0
+efk_version
+if stat!=1808 : goto *failed
+checks++
 screen 0,320,240
 gpreset
 sdim driver_version,512 : sdim driver_renderer,512

@@ -1,6 +1,6 @@
 # 同梱物の出典
 
-Effekseer公式リポジトリ https://github.com/effekseer/Effekseer のタグ1807、コミット`b87d1a2e3ff3731ba25cad34f8d8abeae382b21f`を使用しています。
+Effekseer公式リポジトリ https://github.com/effekseer/Effekseer のタグ1808、コミット`b5700082b49bc5f919610880dafddc90211a9a4e`を使用しています。
 
 - DLL内のEffekseerランタイム、OpenGLレンダラー、共通レンダラー、マテリアルコンパイラー: `Dev/Cpp`由来。MIT、Copyright (c) 2011 Effekseer Project。`licenses/Effekseer-LICENSE.txt`。
 - `assets/Laser01.efkefc`と`assets/Texture/*`: 同じ公式リポジトリの`Examples/Resources`から無改変でコピー。リポジトリのMIT表記を同梱しています。
